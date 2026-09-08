@@ -1,0 +1,252 @@
+/* Apollo regional color; the card and character visual language stays intact. */
+body[data-biome="desert"] {
+  --region-ink: #7a4841;
+  --region-paper: #e7d5b3;
+}
+body[data-biome="waste"] {
+  --region-ink: #602c2c;
+  --region-paper: #d7b594;
+}
+body[data-biome="grass"] {
+  --region-ink: #25562e;
+  --region-paper: #d0da91;
+}
+body[data-biome="forest"] {
+  --region-ink: #19332d;
+  --region-paper: #a8ca58;
+}
+body:not(.front-menu):not(.attack-cinematic) .location {
+  padding: 12px 18px;
+  background: color-mix(in srgb, var(--region-paper) 85%, transparent);
+  border-left: 3px solid var(--region-ink);
+}
+body:not(.front-menu):not(.attack-cinematic) .location :is(h1, .eyebrow) {
+  color: var(--region-ink);
+}
+.route-region {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--region-color) 26%, #fafaf7);
+  border-top: 1px solid color-mix(in srgb, var(--region-ink) 25%, transparent);
+  pointer-events: none;
+}
+.route-region > span {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--region-ink) !important;
+  writing-mode: vertical-rl;
+  letter-spacing: 3px;
+}
+.route-region small {
+  font-size: 9px;
+  margin-top: 8px;
+  color: inherit !important;
+}
+.route-node {
+  background: transparent;
+}
+.route-node > span {
+  color: var(--node-ink) !important;
+  border-color: var(--node-ink);
+  background: var(--node-color);
+}
+.route-node.available > span {
+  outline-color: var(--node-ink);
+}
+.route-node.available:hover > span,
+.route-node.visited > span {
+  background: var(--node-ink);
+  color: #ebede9 !important;
+}
+.landscape-gallery :is(.topbar, .hand-area, .bottom-line) {
+  visibility: hidden;
+}
+.landscape-gallery #battle-stage {
+  visibility: visible;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  z-index: 1;
+}
+.landscape-gallery #battle-stage > :not(#scene) {
+  display: none !important;
+}
+.landscape-gallery #scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.landscape-gallery #modal {
+  background: transparent;
+  backdrop-filter: none;
+  padding: 0;
+  overflow: hidden;
+}
+.landscape-panel {
+  color: var(--map-ink);
+  width: 100%;
+  height: 100dvh;
+  padding: 28px 4vw;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+.landscape-panel button,
+.landscape-panel a {
+  pointer-events: auto;
+}
+.landscape-panel button {
+  color: var(--map-ink);
+  background: color-mix(in srgb, var(--map-paper) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--map-ink) 30%, transparent);
+  padding: 10px 16px;
+}
+.landscape-panel button:focus-visible,
+.landscape-panel a:focus-visible {
+  outline: 3px solid var(--map-ink);
+  outline-offset: 4px;
+}
+.landscape-panel header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  letter-spacing: 2px;
+  font-size: 12px;
+}
+.landscape-panel header b {
+  margin-left: auto;
+}
+.landscape-panel nav {
+  display: flex;
+  align-self: center;
+  gap: 5px;
+  margin-top: -38px;
+}
+.landscape-panel nav button {
+  min-width: 95px;
+  border-top: 4px solid var(--tab-color);
+}
+.landscape-panel button[aria-pressed="true"] {
+  color: #ebede9;
+  background: var(--map-ink);
+  border-color: var(--map-ink);
+}
+.landscape-caption {
+  margin-top: 50px;
+  align-self: flex-start;
+  padding: 14px 20px;
+  border-left: 3px solid var(--map-ink);
+  background: color-mix(in srgb, var(--map-paper) 90%, transparent);
+}
+.landscape-caption small {
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+.landscape-caption h1 {
+  font-size: clamp(32px, 4.5vw, 66px);
+  margin: 6px 0;
+  font-weight: 900;
+  letter-spacing: -2px;
+}
+.landscape-panel footer {
+  margin-top: auto;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.landscape-variants {
+  display: flex;
+  gap: 8px;
+}
+.landscape-variants button {
+  min-width: 135px;
+  text-align: left;
+  font-weight: 700;
+}
+.landscape-variants small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.65;
+  margin-bottom: 10px;
+}
+.landscape-palette {
+  text-align: right;
+  padding: 10px;
+  background: color-mix(in srgb, var(--map-paper) 85%, transparent);
+}
+.landscape-palette > div {
+  display: flex;
+  justify-content: end;
+}
+.landscape-palette span {
+  display: block;
+  width: 32px;
+  height: 22px;
+  border: 1px solid #090a1422;
+  pointer-events: auto;
+}
+.landscape-palette a {
+  display: block;
+  font-size: 10px;
+  margin-top: 9px;
+  color: var(--map-ink);
+  text-decoration: none;
+}
+@media (max-width: 700px) {
+  .landscape-panel {
+    padding: 18px 16px;
+  }
+  .landscape-panel header {
+    gap: 12px;
+  }
+  .landscape-panel nav {
+    margin-top: 18px;
+    align-self: stretch;
+  }
+  .landscape-panel nav button {
+    min-width: 0;
+    flex: 1;
+    padding: 9px;
+  }
+  .landscape-caption {
+    margin-top: 22px;
+  }
+  .landscape-panel footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .landscape-variants button {
+    min-width: 0;
+    flex: 1;
+    font-size: 12px;
+    padding: 10px;
+  }
+  .landscape-palette {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .landscape-palette span {
+    width: 22px;
+    height: 20px;
+  }
+  .landscape-palette a {
+    margin: 0;
+    font-size: 9px;
+  }
+  .route-region > span {
+    left: 5px;
+    font-size: 11px;
+  }
+  body:not(.front-menu):not(.attack-cinematic) .location {
+    padding: 6px 10px;
+  }
+}

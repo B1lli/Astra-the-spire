@@ -1,0 +1,20 @@
+{
+  "name": "astral-ash",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test tests/journey.test.js tests/biomes.test.js",
+    "simulate": "node tests/simulate.js"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "vite": "^6.1.0"
+  }
+}

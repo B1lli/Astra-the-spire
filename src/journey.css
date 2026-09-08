@@ -1,0 +1,898 @@
+/* Journey screens share the same paper-and-ink language as combat. */
+.front-menu #modal {
+  padding: 0;
+  background: var(--paper);
+  backdrop-filter: none;
+}
+.front-menu .topbar,
+.front-menu #battle-stage,
+.front-menu .hand-area {
+  visibility: hidden;
+}
+.title-screen,
+.character-screen {
+  width: 100%;
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--paper);
+  color: var(--blue);
+}
+.title-art {
+  position: absolute;
+  inset: 0 0 0 35%;
+  overflow: hidden;
+}
+.title-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 25%;
+  filter: grayscale(1);
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+}
+.title-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--paper), transparent 40%);
+}
+.title-copy {
+  position: relative;
+  grid-column: 1;
+  padding: 10vh 0 8vh 9vw;
+  z-index: 1;
+}
+.title-number,
+.title-bottom {
+  font-size: 11px;
+  letter-spacing: 4px;
+}
+.title-copy h1 {
+  font-size: clamp(90px, 12vw, 174px);
+  line-height: 0.96;
+  letter-spacing: -10px;
+  margin: 6vh 0 26px;
+  font-weight: 950;
+}
+.title-copy h1 span {
+  display: block;
+  margin-left: 95px;
+}
+.title-copy p {
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin: 30px 0;
+}
+.title-actions {
+  display: grid;
+  gap: 12px;
+  width: 260px;
+  margin-bottom: 8vh;
+}
+.title-actions button {
+  margin: 0;
+  width: 100%;
+}
+.title-actions small {
+  display: block;
+  font-size: 10px;
+  padding-left: 20px;
+  opacity: 0.7;
+}
+.character-screen {
+  color: var(--ink);
+  gap: 4vw;
+  padding: 7vh 7vw;
+  grid-template-columns: minmax(240px, 1fr) minmax(340px, 1fr);
+}
+.back-link {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  z-index: 2;
+  color: inherit;
+  padding: 8px;
+}
+.character-art {
+  height: 82vh;
+  overflow: hidden;
+  border-bottom: 8px solid;
+}
+.character-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  mix-blend-mode: multiply;
+}
+.character-copy {
+  align-self: center;
+  max-width: 520px;
+}
+.selection-label {
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+.character-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 30px;
+}
+.character-tabs button {
+  padding: 10px 23px;
+  border: 1px solid;
+  color: inherit;
+  font-weight: 800;
+}
+.character-tabs button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.character-copy h1 {
+  font-size: clamp(45px, 6vw, 85px);
+  margin: 0;
+  line-height: 1;
+}
+.character-copy h2 {
+  font-size: 16px;
+  letter-spacing: 4px;
+  margin: 12px 0 20px;
+}
+.character-copy p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.character-stats {
+  display: flex;
+  gap: 25px;
+  margin: 22px 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+.starter-relic,
+.equipped-relic {
+  display: flex;
+  gap: 18px;
+  border-block: 1px solid;
+  padding: 18px 0;
+  margin: 20px 0;
+  align-items: center;
+}
+.starter-relic > .icon,
+.equipped-relic > .icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+.starter-relic small,
+.equipped-relic small {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 5px;
+  opacity: 0.65;
+}
+.starter-relic b,
+.equipped-relic b {
+  font-size: 17px;
+}
+.starter-relic p,
+.equipped-relic p {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.starter-deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 15px;
+  font-size: 12px;
+  margin: 20px 0 26px;
+}
+.starter-deck small {
+  flex-basis: 100%;
+  opacity: 0.65;
+}
+.character-copy .primary-button {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  margin: 0;
+  width: 100%;
+}
+.blessing-screen {
+  width: min(850px, 94vw);
+}
+.blessing-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.blessing-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid var(--blue);
+  padding: 30px 15px;
+  background: transparent;
+}
+.blessing-options button:hover {
+  box-shadow: 5px 5px 0 var(--blue);
+  transform: translate(-2px, -2px);
+}
+.blessing-options .icon {
+  width: 33px;
+  height: 33px;
+}
+.blessing-options b {
+  font-size: 22px;
+}
+.blessing-options span {
+  font-size: 13px;
+}
+.blessing-options small {
+  font-size: 11px;
+  max-width: 170px;
+  line-height: 1.5;
+}
+.chest-relic {
+  margin: 25px 0;
+  text-align: center;
+}
+.chest-relic > .icon {
+  width: 80px;
+  height: 80px;
+}
+.chest-relic p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.route-modal {
+  width: min(880px, 96vw);
+  padding: 28px 34px 20px;
+  height: min(850px, 94dvh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.route-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 18px;
+  gap: 16px;
+}
+.route-heading h2 {
+  font-size: 28px;
+  margin: 0;
+}
+.route-heading p {
+  font-size: 11px;
+  margin: 7px 0 15px;
+}
+.route-resources {
+  font-weight: 800;
+  font-size: 15px;
+}
+.route-resources small {
+  display: block;
+  font-size: 10px;
+  margin-top: 8px;
+  text-align: right;
+  font-weight: 400;
+}
+.route-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 9px;
+  padding: 12px 0;
+  border-block: 1px solid;
+  font-size: 10px;
+  flex-wrap: wrap;
+}
+.route-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.route-legend .icon {
+  width: 14px;
+  height: 14px;
+}
+.route-scroll {
+  overflow: auto;
+  flex: 1;
+  min-height: 160px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue) transparent;
+}
+.route-board {
+  position: relative;
+  width: 100%;
+}
+.route-board > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.route-board > svg path {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.5;
+  opacity: 0.22;
+  stroke-dasharray: 4 7;
+}
+.route-board > svg path.traveled {
+  stroke-width: 4;
+  opacity: 1;
+  stroke-dasharray: none;
+}
+.route-board > svg path.next-path {
+  opacity: 0.8;
+  stroke-width: 2;
+}
+.route-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 90px;
+  padding: 5px;
+  opacity: 0.4;
+}
+.route-node > span {
+  border: 1px solid var(--blue);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--paper);
+}
+.route-node .icon {
+  width: 23px;
+  height: 23px;
+}
+.route-node b {
+  font-size: 10px;
+  background: var(--paper);
+  padding: 2px 5px;
+}
+.route-node small {
+  font-size: 9px;
+}
+.route-node.available {
+  opacity: 1;
+  cursor: pointer;
+}
+.route-node.available > span {
+  border-width: 2px;
+  outline: 1px solid var(--blue);
+  outline-offset: 5px;
+}
+.route-node.available:hover > span {
+  background: var(--blue);
+  color: var(--paper);
+  transform: scale(1.12);
+}
+.route-node.visited {
+  opacity: 1;
+}
+.route-node.visited > span {
+  background: var(--blue);
+  color: var(--paper);
+}
+.route-node.boss > span {
+  width: 58px;
+  height: 58px;
+  border-radius: 3px;
+}
+.route-bottom {
+  padding-top: 14px;
+  border-top: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.route-bottom span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.route-bottom button {
+  margin-left: auto;
+  border: 1px solid;
+  padding: 7px 12px;
+}
+.route-bottom .icon {
+  width: 17px;
+  height: 17px;
+}
+#target-arrow {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: none;
+  z-index: 95;
+  overflow: visible;
+  color: var(--blue);
+}
+#target-arrow[hidden] {
+  display: none;
+}
+.aim-path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+}
+.aim-outline {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 10;
+}
+#target-arrow circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.unit-label.aimed {
+  outline: 2px solid var(--blue);
+  outline-offset: 7px;
+}
+#hand .game-card {
+  touch-action: none;
+}
+.ally-label[hidden] {
+  display: none !important;
+}
+.ally-label small {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+  white-space: nowrap;
+}
+#relics .relic {
+  width: auto;
+  padding: 6px 9px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  border: 1px solid var(--blue);
+}
+#relics .relic span {
+  display: inline;
+  font-size: 11px;
+}
+.party-portraits {
+  display: none !important;
+}
+.presentation #battle-stage {
+  visibility: visible;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  z-index: 1;
+}
+.presentation #battle-stage > :not(#scene) {
+  display: none !important;
+}
+.presentation #scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.presentation #modal {
+  background: transparent;
+  backdrop-filter: none;
+}
+.presentation .title-screen,
+.presentation .character-screen {
+  background: transparent;
+}
+.presentation .character-art {
+  opacity: 0.13;
+  filter: grayscale(1);
+  border: 0;
+  height: 80vh;
+  pointer-events: none;
+}
+.presentation .character-copy {
+  background: var(--paper);
+  padding: 30px;
+  border-left: 1px solid var(--blue);
+  color: var(--blue);
+}
+.presentation .character-screen {
+  --ink: var(--blue) !important;
+}
+.title-composition {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.title-orbit {
+  position: absolute;
+  width: 62vw;
+  height: 62vw;
+  border: 1px solid var(--blue);
+  border-radius: 50%;
+  top: 50%;
+  left: 63%;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+}
+.title-orbit::before,
+.title-orbit::after {
+  content: "";
+  position: absolute;
+  inset: 5%;
+  border: 1px dashed var(--blue);
+  border-radius: 50%;
+}
+.title-orbit::after {
+  inset: 12%;
+  border-style: solid;
+}
+.title-slash {
+  position: absolute;
+  width: 140%;
+  height: 80px;
+  top: 48%;
+  left: -20%;
+  transform: rotate(-27deg);
+  background: var(--blue);
+  mix-blend-mode: multiply;
+  z-index: -1;
+}
+.manga-strip {
+  position: absolute;
+  right: 0;
+  width: 16vw;
+  height: 26vh;
+  overflow: hidden;
+  border-left: 8px solid var(--blue);
+  transform: skewY(-12deg);
+  background: #fff;
+}
+.manga-strip img {
+  width: 100%;
+  height: 190%;
+  object-fit: cover;
+  object-position: center 20%;
+  transform: skewY(12deg) scale(1.15);
+  filter: grayscale(1) contrast(1.25);
+  mix-blend-mode: multiply;
+}
+.strip-one {
+  top: -3%;
+}
+.strip-two {
+  top: 32%;
+}
+.strip-three {
+  top: 67%;
+}
+.title-outline {
+  position: absolute;
+  left: 37%;
+  bottom: 2%;
+  font-size: 12vw;
+  font-weight: 950;
+  letter-spacing: -1vw;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--blue);
+  opacity: 0.22;
+  line-height: 1;
+}
+.title-cross {
+  position: absolute;
+  font-size: 36px;
+  color: var(--blue);
+}
+.cross-one {
+  top: 10%;
+  left: 48%;
+}
+.cross-two {
+  bottom: 18%;
+  left: 49%;
+}
+.title-copy {
+  background: linear-gradient(90deg, var(--paper) 65%, transparent);
+}
+.title-copy h1 {
+  animation: title-stamp 0.8s cubic-bezier(0.12, 0.8, 0.2, 1) both;
+}
+.manga-strip {
+  animation: panel-entry 0.9s cubic-bezier(0.12, 0.8, 0.2, 1) both;
+}
+.strip-two {
+  animation-delay: 0.12s;
+}
+.strip-three {
+  animation-delay: 0.24s;
+}
+.title-actions {
+  animation: menu-entry 0.6s 0.45s both;
+}
+@keyframes title-stamp {
+  from {
+    opacity: 0;
+    transform: translate(-60px, 30px) scale(1.3);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes panel-entry {
+  from {
+    opacity: 0;
+    translate: 150px -40px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes menu-entry {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-copy h1,
+  .manga-strip,
+  .title-actions {
+    animation: none;
+  }
+}
+@media (max-width: 700px) {
+  .title-screen {
+    display: block;
+  }
+  .title-art {
+    left: 5%;
+    opacity: 0.65;
+  }
+  .title-copy {
+    padding: 12vh 9vw;
+  }
+  .title-copy h1 {
+    font-size: 110px;
+  }
+  .title-copy h1 span {
+    margin-left: 65px;
+  }
+  .title-copy {
+    background: linear-gradient(90deg, var(--paper), transparent);
+    padding-top: 10vh;
+  }
+  .manga-strip {
+    width: 21vw;
+    opacity: 0.7;
+  }
+  .title-orbit {
+    width: 130vw;
+    height: 130vw;
+  }
+  .title-outline {
+    left: 25%;
+    bottom: 6%;
+    font-size: 20vw;
+  }
+  .presentation .character-copy {
+    background: #fafaf7e8;
+    padding: 16px;
+  }
+  .presentation .character-art {
+    display: none;
+  }
+  .character-screen {
+    display: block;
+    padding: 60px 24px 24px;
+    overflow: auto;
+  }
+  .character-art {
+    position: absolute;
+    inset: 0 0 auto 30%;
+    height: 100%;
+    opacity: 0.12;
+    border: 0;
+    pointer-events: none;
+  }
+  .character-copy {
+    position: relative;
+  }
+  .character-tabs {
+    margin: 14px 0 24px;
+  }
+  .character-copy h1 {
+    font-size: 60px;
+  }
+  .character-stats {
+    gap: 20px;
+  }
+  .starter-deck {
+    margin: 16px 0;
+  }
+  .blessing-options {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .blessing-options button {
+    display: grid;
+    grid-template-columns: 30px 50px 1fr;
+    padding: 18px 14px;
+    gap: 12px;
+  }
+  .blessing-options small {
+    grid-column: 2 / 4;
+    max-width: none;
+  }
+  .blessing-options b {
+    font-size: 19px;
+  }
+  .blessing-options .icon {
+    width: 24px;
+  }
+  .route-modal {
+    padding: 22px 12px 16px;
+    height: 96dvh;
+  }
+  .route-heading h2 {
+    font-size: 22px;
+  }
+  .route-resources {
+    font-size: 12px;
+  }
+  .route-legend {
+    gap: 8px 12px;
+  }
+  .route-node {
+    width: 78px;
+  }
+  .route-node > span {
+    width: 38px;
+    height: 38px;
+  }
+  #relics .relic span {
+    font-size: 9px;
+  }
+  #relics .relic {
+    padding: 4px;
+    gap: 4px;
+  }
+  .ally-label small {
+    font-size: 10px;
+  }
+}
+
+.game-card {
+  --ink: var(--blue) !important;
+}
+.game-card img {
+  filter: grayscale(1) contrast(1.08);
+}
+#relics .relic {
+  transform: none;
+  border-radius: 0;
+}
+.route-node:disabled {
+  opacity: 0.58;
+}
+.route-node.visited:disabled {
+  opacity: 1;
+}
+
+#hand .game-card {
+  touch-action: pan-x;
+}
+.attack-cinematic #battle-stage {
+  position: fixed;
+  inset: 62px 0 0 !important;
+  width: 100%;
+  height: auto !important;
+  z-index: 81;
+  border: 0;
+}
+.attack-cinematic #scene {
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.attack-cinematic #battle-stage > :not(#scene):not(#float-layer) {
+  opacity: 0;
+  pointer-events: none;
+}
+.attack-cinematic .hand-area {
+  opacity: 0;
+  pointer-events: none;
+}
+.attack-cinematic #time-dilation {
+  z-index: 90;
+}
+.attack-cinematic #scene::after {
+  display: none;
+}
+#attack-caption {
+  position: fixed;
+  bottom: 9%;
+  left: 7%;
+  z-index: 92;
+  border-left: 3px solid var(--blue);
+  padding: 10px 22px;
+  pointer-events: none;
+  color: var(--blue);
+  background: #fafaf7dc;
+  animation: attack-caption-in 0.25s both;
+}
+#attack-caption small {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 5px;
+  margin-bottom: 6px;
+}
+#attack-caption strong {
+  display: block;
+  font-size: clamp(26px, 4vw, 52px);
+  font-weight: 900;
+}
+@keyframes attack-caption-in {
+  from {
+    opacity: 0;
+    transform: translateX(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #attack-caption {
+    animation: none;
+  }
+}
+.school-gallery article {
+  --ink: var(--blue) !important;
+}
+.school-gallery img {
+  filter: grayscale(1);
+}
+@media (max-width: 700px) {
+  .tools #pause {
+    display: grid !important;
+  }
+  .tools #school-gallery-button {
+    display: none;
+  }
+  #chain {
+    font-size: 11px;
+  }
+  .presentation .character-copy {
+    margin-top: 340px;
+    background: var(--paper);
+  }
+}
