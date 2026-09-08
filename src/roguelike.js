@@ -1,5 +1,6 @@
 import { CARDS, RELICS, FLOORS, CHARACTERS, cardData } from "./data.js";
 import { generateRoute } from "./route.js";
+import { ELEMENT_MAX, ULTIMATES } from "./ultimates.js";
 export { cardData };
 export const alive = (s) => s.battle?.enemies.filter((e) => e.hp > 0) || [];
 export function random(s) {
@@ -203,6 +204,7 @@ export function startBattle(s, kind) {
     kind,
     enemies,
     turn: 1,
+    elementCharge: 0,
     phase: "player",
     energy: 3 + (s.relics.includes("capacitor") ? 1 : 0),
     maxEnergy: 3 + (s.relics.includes("capacitor") ? 1 : 0),
@@ -286,6 +288,10 @@ export function playCard(s, uid, targetId) {
   };
   b.hand.splice(index, 1);
   b.energy -= card.cost;
+  b.elementCharge = Math.min(
+    ELEMENT_MAX,
+    (b.elementCharge || 0) + Math.max(1, card.cost),
+  );
   b.played++;
   s.stats.cards++;
   const targets = card.all ? alive(s) : targeted ? [target] : [];
@@ -380,6 +386,60 @@ export function previewCard(s, uid, target) {
       state: clone,
       damage: result.hits.reduce((n, h) => n + h.damage, 0),
       blocked: result.hits.reduce((n, h) => n + h.absorbed, 0),
+      incoming: incoming(clone),
+    };
+  } catch (e) {
+    return { valid: false, reason: e.message };
+  }
+}
+export function playUltimate(s) {
+  if (s.phase !== "battle" || s.battle?.phase !== "player" || !alive(s).length)
+    throw new Error("当前无法释放");
+  const b = s.battle,
+    card = ULTIMATES[s.hero];
+  if ((b.elementCharge || 0) < ELEMENT_MAX) throw new Error("元素尚未蓄满");
+  const result = {
+    card,
+    targetId: b.target,
+    hits: [],
+    block: 0,
+    heal: 0,
+    drawn: 0,
+    energy: 0,
+    notes: [],
+    resonance: false,
+  };
+  b.elementCharge = 0;
+  b.drawEvents = [];
+  for (const e of alive(s)) {
+    const damage = damageValue(s, card, e);
+    for (let i = 0; i < (card.hits || 1) && e.hp > 0; i++)
+      result.hits.push(hitEnemy(s, e, damage));
+    if (e.hp > 0 && card.burn) e.burn += card.burn;
+  }
+  b.nextAttack = 0;
+  if (card.block) {
+    b.block += card.block;
+    result.block = card.block;
+  }
+  s.stats.ultimates = (s.stats.ultimates || 0) + 1;
+  if (!alive(s).some((e) => e.id === b.target))
+    b.target = alive(s)[0]?.id || null;
+  if (!alive(s).length) {
+    finishBattle(s);
+    result.victory = true;
+  }
+  return result;
+}
+export function previewUltimate(s) {
+  const clone = structuredClone(s);
+  try {
+    const result = playUltimate(clone);
+    return {
+      valid: true,
+      result,
+      state: clone,
+      damage: result.hits.reduce((n, h) => n + h.damage, 0),
       incoming: incoming(clone),
     };
   } catch (e) {

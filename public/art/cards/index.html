@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星烬 · 独立卡面图鉴</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fafaf7;color:#242321;font-family:system-ui,sans-serif}header{padding:36px 5vw 24px;border-bottom:1px solid #ddd}h1{font-size:28px;margin:0 0 12px}p{line-height:1.6;margin:0}nav{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}button{font:inherit;background:transparent;border:1px solid #aaa;padding:8px 18px;cursor:pointer}button[aria-pressed=true]{background:#242321;color:#fafaf7}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:28px;padding:32px 5vw}figure{margin:0;color:var(--ink)}img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:#fff}figcaption{border-top:2px solid currentColor;padding:12px 0;display:flex;justify-content:space-between;align-items:center}small{font-size:11px}a{color:inherit}figure[hidden]{display:none}
+</style>
+<header><h1>星烬 / 独立卡面图鉴</h1><p>纯色 · 凌厉线条 · 留白<br>每张卡一个动作，每个角色一种主色。</p><nav aria-label="按角色筛选"><button data-hero="all" aria-pressed="true">全部 26</button><button data-hero="kael" aria-pressed="false">凯尔 / 暗红</button><button data-hero="lyra" aria-pressed="false">莉娅 / 钴蓝</button><button data-hero="syl" aria-pressed="false">希尔 / 深绿</button></nav></header>
+<main></main>
+<script type="module">
+const cards=await fetch('./prompts.json').then(r=>r.json());
+const colors={kael:'#a53030',lyra:'#2148b8',syl:'#25562e'};
+document.querySelector('main').innerHTML=cards.map(c=>`<figure data-hero="${c.hero}" style="--ink:${colors[c.hero]}"><a href="./${c.key}.png" target="_blank"><img src="./${c.key}.png" alt="${c.name}独立卡面" loading="lazy"></a><figcaption><strong>${c.name}</strong><small>${c.key}</small></figcaption></figure>`).join('');
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));document.querySelectorAll('figure').forEach(x=>x.hidden=b.dataset.hero!=='all'&&x.dataset.hero!==b.dataset.hero);});
+</script>
+</html>

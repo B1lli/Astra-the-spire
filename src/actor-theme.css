@@ -1,0 +1,28 @@
+body[data-hero="kael"] {
+  --blue: #a53030;
+  --muted: #7a4841;
+}
+body[data-hero="lyra"] {
+  --blue: #2148b8;
+  --muted: #6476a3;
+}
+body[data-hero="syl"] {
+  --blue: #25562e;
+  --muted: #468232;
+}
+body[data-hero] {
+  --line: color-mix(in srgb, var(--blue) 20%, transparent);
+  color: var(--blue);
+}
+body[data-hero] .modal-card {
+  box-shadow: 10px 10px 0 color-mix(in srgb, var(--blue) 14%, transparent);
+}
+body[data-hero] .game-card {
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--blue) 18%, transparent);
+}
+body[data-hero] .character-screen {
+  --ink: var(--blue) !important;
+}
+body[data-hero] .title-actions {
+  color: var(--blue);
+}

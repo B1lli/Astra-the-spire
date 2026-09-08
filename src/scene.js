@@ -1,6 +1,9 @@
 import * as T from "three";
+import { StatusFX } from "./status-fx.js";
 import { bladeRibbon } from "./blade-ribbon.js";
 import { buildBiome } from "./biome-world.js";
+import { performCataclysm } from "./cataclysm.js";
+import { ACTOR_INKS, applyActorInk, inkVector } from "./actor-ink.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
@@ -63,19 +66,34 @@ export class BattleScene {
         tDiffuse: { value: null },
         ink: { value: new T.Vector3(0.129, 0.282, 0.722) },
         resolution: { value: new T.Vector2(800, 600) },
-        colored: { value: 0 },
+        colored: { value: 1 },
+        worldInk: { value: 0 },
+        verticalSmear: { value: 0 },
+        actorInks: { value: Object.values(ACTOR_INKS).map(inkVector) },
       },
       vertexShader:
         "varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
-      fragmentShader: `uniform sampler2D tDiffuse; uniform vec3 ink; uniform vec2 resolution; uniform float colored; varying vec2 vUv;
+      fragmentShader: `uniform sampler2D tDiffuse; uniform vec3 ink; uniform vec2 resolution; uniform float colored; uniform vec3 actorInks[6]; uniform float worldInk; uniform float verticalSmear; varying vec2 vUv;
         float lum(vec2 uv){return dot(texture2D(tDiffuse,uv).rgb,vec3(.299,.587,.114));}
         void main(){float l=lum(vUv);vec2 d=1.0/resolution;
           float edge=abs(l-lum(vUv+vec2(d.x,0.0)))+abs(l-lum(vUv+vec2(0.0,d.y)));
-          if(colored>.5){gl_FragColor=vec4(texture2D(tDiffuse,vUv).rgb*(1.0-min(edge*.3,.12)),1.0);return;}
+          vec4 source=texture2D(tDiffuse,vUv);
+          if(verticalSmear>.0001){
+            vec3 smear=source.rgb*.2;
+            for(int tap=1;tap<=4;tap++){float off=float(tap)*verticalSmear*.25;smear+=(texture2D(tDiffuse,vUv+vec2(0.,off)).rgb+texture2D(tDiffuse,vUv-vec2(0.,off)).rgb)*.1;}
+            source.rgb=smear;l=dot(smear,vec3(.299,.587,.114));
+          }
+          float actorIndex=floor(source.a*10.0+.5)-1.0;
+          bool actor=actorIndex>=0.0&&actorIndex<6.0&&abs(source.a-(actorIndex+1.0)/10.0)<.015;
+          if(!actor && worldInk<.001){gl_FragColor=vec4(source.rgb*(1.0-min(edge*.3,.12)),1.0);return;}
+          vec3 chosenInk=ink;
+          for(int i=0;i<6;i++){if(abs(float(i)-actorIndex)<.1)chosenInk=actorInks[i];}
+          chosenInk=mix(chosenInk,ink,worldInk);
           float density=clamp((.96-l)*2.3+edge*3.0,0.0,1.0);
           density=floor(density*4.0+.35)/4.0;
           if(density>.15&&density<.4){vec2 p=mod(gl_FragCoord.xy,4.0)-2.0;density=length(p)<.8?.45:.12;}
-          gl_FragColor=vec4(mix(vec3(.9804,.9804,.9686),ink,density),1.0);
+          vec3 comic=mix(vec3(.9804,.9804,.9686),chosenInk,density);
+          gl_FragColor=vec4(actor?comic:mix(source.rgb,comic,worldInk),1.0);
         }`,
     });
     this.composer.addPass(this.mono);
@@ -161,7 +179,7 @@ export class BattleScene {
   }
   setEnvironmentColor(enabled) {
     const colored = enabled && !!this.biome;
-    this.mono.uniforms.colored.value = colored ? 1 : 0;
+    this.mono.uniforms.colored.value = 1;
     const skyColor = colored ? this.biome.theme.sky : "#FAFAF7";
     this.sky.material.uniforms.top.value
       .set(skyColor)
@@ -206,7 +224,7 @@ export class BattleScene {
   }
   glow(color) {
     return new T.MeshBasicMaterial({
-      color: "#243052",
+      color: color || ACTOR_INKS[this.activeHero] || "#2148b8",
       transparent: true,
       opacity: 0.9,
       depthWrite: false,
@@ -477,7 +495,13 @@ export class BattleScene {
       selector.visible = false;
       if (u.team === "ally") this.hero(body, u, i);
       else this.enemy(body, u);
+      const actorIndex = Object.keys(ACTOR_INKS).indexOf(u.id);
+      const actorInk = applyActorInk(body, ACTOR_INKS[u.id], actorIndex);
+      this.mono.uniforms.actorInks.value[actorIndex] = actorInk.value;
+      ring.material.color.set(ACTOR_INKS[u.id]);
+      selector.material.color.set(ACTOR_INKS[u.id]);
       this.units.set(u.id, {
+        actorInk,
         group,
         body,
         ring,
@@ -747,6 +771,7 @@ export class BattleScene {
       const staff = new T.Group();
       staff.position.set(0.65, 1.14, 0.15);
       g.add(staff);
+      rig.effectWeapon = staff;
       this.mesh(
         new T.CylinderGeometry(0.035, 0.055, 2.2, 6),
         ink,
@@ -787,6 +812,7 @@ export class BattleScene {
       bow.position.set(0.69, 1.54, 0.3);
       bow.rotation.z = -0.1;
       g.add(bow);
+      rig.effectWeapon = bow;
       plate(
         bow,
         [
@@ -919,6 +945,10 @@ export class BattleScene {
     this.target = state.target;
     for (const u of state.units) {
       const mesh = this.units.get(u.id);
+      if (u.team === "ally") {
+        mesh.statusFx ||= new StatusFX(mesh, u.id);
+        mesh.statusFx.set(u.visual || {});
+      }
       if (u.hp <= 0 && !mesh.dead && !u.absent) {
         this.burst(
           mesh.group.position.clone().add(new T.Vector3(0, 1, 0)),
@@ -1020,7 +1050,7 @@ export class BattleScene {
     cut.quaternion.copy(this.camera.quaternion);
     cut.rotateZ(angle);
     const layers = [
-      [4.8, 0.22, 0.19, 0x152550],
+      [4.8, 0.22, 0.19, color],
       [4.65, 0.045, 0.19, 0xffffff],
     ];
     for (const [length, width, curve, ink] of layers) {
@@ -1147,7 +1177,7 @@ export class BattleScene {
     this.tempoTarget = this.motion ? scale : 1;
     this.onTempo?.(this.tempoTarget, this.motion ? label : "");
   }
-  setInk(hex = "#2148B8") {
+  setInk(hex = ACTOR_INKS[this.activeHero] || "#2148B8") {
     const value = parseInt(hex.slice(1), 16);
     this.mono.uniforms.ink.value.set(
       ((value >> 16) & 255) / 255,
@@ -1194,25 +1224,22 @@ export class BattleScene {
       shield.scale.setScalar(0.85 + Math.sin(t * Math.PI) * 0.2);
       shield.material.opacity = Math.sin(t * Math.PI) * 0.7;
     });
-    for (let i = 0; i < 2; i++) {
-      const r = new T.Mesh(
-        new T.TorusGeometry(0.8 + i * 0.25, 0.02, 4, 60),
-        this.glow(color),
-      );
+    for (let i = 0; i < 8; i++) {
+      const r = new T.Mesh(new T.OctahedronGeometry(1), this.glow(color));
       r.position.copy(pos);
-      r.position.y = 0.1;
-      r.rotation.x = Math.PI / 2;
-      this.addEffect(r, 0.8, (t) => {
-        r.scale.setScalar(1 + t * 0.8);
-        r.material.opacity = 1 - t;
+      const angle = i * 2.399;
+      r.scale.set(.025, .25, .025);
+      this.addEffect(r, .8, (t) => {
+        r.position.set(pos.x + Math.cos(angle) * (.5 + t * .4), pos.y - .7 + t * 1.7, pos.z + Math.sin(angle) * .7);
+        r.material.opacity = Math.sin(t * Math.PI);
       });
     }
   }
+
   async performCard(card, result, onImpact) {
+    if (card.cinematic) return performCataclysm(this, card, result, onImpact);
     const actor = this.units.get(card.hero),
-      color = ["#f4ad72", "#8adfd5", "#bfdb8c"][
-        ["kael", "lyra", "syl"].indexOf(card.hero)
-      ];
+      color = ACTOR_INKS[card.hero];
     const targets = [...new Set(result.hits.map((h) => h.id))];
     if (card.target && !targets.length && result.targetId)
       targets.push(result.targetId);
@@ -1425,7 +1452,10 @@ export class BattleScene {
     rig.cape.rotation.x = 0;
   }
   resonanceFx() {
-    this.shieldFx(this.activeHero || "kael", "#2148B8");
+    this.shieldFx(
+      this.activeHero || "kael",
+      ACTOR_INKS[this.activeHero || "kael"],
+    );
     this.bloom.strength = 1.1;
     const pulse = new T.Group();
     this.addEffect(pulse, 0.9, (t) => {
@@ -1471,6 +1501,11 @@ export class BattleScene {
     this.setEnvironmentColor(false);
     const narrow = this.host.clientWidth < 700;
     this.presentation = { id, mode, started: performance.now() };
+    this.units
+      .get(id)
+      .actorInk.value.copy(
+        inkVector(mode === "title" ? "#2148b8" : ACTOR_INKS[id]),
+      );
     this.environment.forEach((o) => (o.visible = false));
     for (const [key, u] of this.units) {
       u.group.visible = key === id;
@@ -1492,14 +1527,17 @@ export class BattleScene {
         u.ring.visible = false;
       }
     }
-    this.setInk("#2148B8");
+    this.setInk(mode === "title" ? "#2148b8" : ACTOR_INKS[id]);
   }
   endPresentation() {
     this.presentation = null;
     this.landscapePreview = false;
     this.setEnvironmentColor(true);
     this.environment.forEach((o) => (o.visible = true));
-    for (const u of this.units.values()) u.ring.visible = true;
+    for (const [id, u] of this.units) {
+      u.ring.visible = true;
+      u.actorInk.value.copy(inkVector(ACTOR_INKS[id]));
+    }
   }
   delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms / this.speed));
@@ -1520,6 +1558,7 @@ export class BattleScene {
     this.dust.rotation.y = this.time * 0.015;
     this.portal.rotation.z = this.time * 0.2;
     for (const u of this.units.values()) {
+      u.statusFx?.tick(realDt, this.time, this.motion, u.group.visible && !this.presentation);
       u.body.position.y = Math.sin(this.time * 2 + u.phase) * 0.045;
       u.ring.material.opacity = 0.28 + Math.sin(this.time * 2 + u.phase) * 0.1;
       u.selector.rotation.z = this.time * 0.35;

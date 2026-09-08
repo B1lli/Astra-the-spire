@@ -32,6 +32,84 @@ function hand(s, keys) {
 }
 const play = (s, key, target = "shard") =>
   G.playCard(s, s.battle.hand.find((c) => c.key === key).uid, target);
+
+test("元素按费用蓄能，零费至少一格，封顶且跨回合保留", () => {
+  const s = combat();
+  hand(s, ["guard", "brand", "foresight", "guard", "guard", "guard"]);
+  play(s, "guard");
+  assert.equal(s.battle.elementCharge, 1);
+  play(s, "brand");
+  assert.equal(s.battle.elementCharge, 3);
+  play(s, "foresight");
+  assert.equal(s.battle.elementCharge, 4);
+  play(s, "guard");
+  play(s, "guard");
+  play(s, "guard");
+  assert.equal(s.battle.elementCharge, 6);
+  G.startPlayerTurn(s);
+  assert.equal(s.battle.elementCharge, 6);
+  G.startBattle(s, "elite");
+  assert.equal(s.battle.elementCharge, 0);
+});
+test("无效出牌和未蓄满大招均不改变蓄能或存档", () => {
+  const s = combat();
+  s.battle.energy = 0;
+  const before = structuredClone(s);
+  assert.throws(() =>
+    G.playCard(s, s.battle.hand.find((c) => cardData(c).cost > 0).uid),
+  );
+  assert.throws(() => G.playUltimate(s), /蓄满/);
+  assert.deepEqual(s, before);
+  delete s.battle.elementCharge;
+  assert.equal(G.previewUltimate(s).valid, false);
+});
+test("大招预览准确且无副作用，不消耗行动能量或手牌，不能重复释放", () => {
+  for (const hero of ["kael", "lyra", "syl"]) {
+    const s = combat(hero);
+    G.startBattle(s, "elite");
+    s.battle.elementCharge = 6;
+    s.battle.energy = 0;
+    const before = structuredClone(s),
+      p = G.previewUltimate(s);
+    assert.equal(p.valid, true);
+    assert.deepEqual(s, before);
+    const result = G.playUltimate(s);
+    assert.deepEqual(result, p.result);
+    assert.deepEqual(s, p.state);
+    assert.equal(s.battle.elementCharge, 0);
+    assert.equal(s.battle.energy, 0);
+    assert.deepEqual(s.battle.hand, before.battle.hand);
+    assert.equal(s.stats.cards, before.stats.cards);
+    assert.throws(() => G.playUltimate(s));
+  }
+});
+test("元素大招保留易伤、格挡、多段与胜利结算", () => {
+  const s = combat("syl");
+  G.startBattle(s, "elite");
+  s.battle.elementCharge = 6;
+  s.battle.enemies[0].vulnerable = 2;
+  s.battle.enemies[0].block = 10;
+  const result = G.playUltimate(s);
+  assert.equal(result.hits.length, 5);
+  assert.equal(result.hits[0].amount, 7);
+  assert.equal(
+    result.hits.reduce((n, h) => n + h.damage, 0),
+    25,
+  );
+  const mage = combat("lyra");
+  G.startBattle(mage, "elite");
+  mage.battle.elementCharge = 6;
+  G.playUltimate(mage);
+  assert.equal(mage.battle.block, 12);
+  const fire = combat();
+  fire.hp = 60;
+  fire.battle.elementCharge = 6;
+  fire.battle.enemies[0].hp = 20;
+  const hit = G.playUltimate(fire);
+  assert.equal(hit.victory, true);
+  assert.equal(fire.phase, "reward");
+  assert.equal(fire.hp, 66);
+});
 function win(s) {
   s.battle.enemies.forEach((e) => (e.hp = 0));
   G.finishBattle(s);

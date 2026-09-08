@@ -1,0 +1,25 @@
+/* Reserve actual reading space instead of shrinking multi-effect rules. */
+#app .game-card { height: auto; min-height: 310px; padding-bottom: 29px; }
+#app .game-card .card-art-wrap { height: 115px; }
+#app .game-card h3 { font-size: 20px; line-height: 1.25; margin: 9px 10px 7px; }
+#app .game-card p { font-size: 16px; line-height: 1.5; margin: 0 10px; min-height: 0; text-align: left; white-space: normal; overflow: visible; }
+#app .game-card p b { font-weight: 800; }
+#app .game-card .card-foot { font-size: 11px; }
+.card-keyword { font-weight: 750; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+#card-keyword-help { position: fixed; z-index: 10000; width: 250px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow-y: auto; pointer-events: none; padding: 14px 16px; color: #fafaf7; background: #17202e; border: 1px solid #fafaf7; box-shadow: 5px 5px 0 #17202e55; }
+#card-keyword-help[hidden] { display: none; }
+#card-keyword-help section + section { margin-top: 12px; }
+#card-keyword-help strong { font-size: 17px; color: #f3dca0; }
+#card-keyword-help p { margin: 4px 0 0; font-size: 15px; line-height: 1.55; }
+@media (max-height: 800px), (max-width: 900px) {
+  #app #hand .game-card { min-height: 280px; height: auto; }
+  #app #hand .card-art-wrap { height: 80px; }
+  #app #hand .game-card h3 { font-size: 18px; }
+  #app #hand .game-card p { font-size: 15px; line-height: 1.45; }
+}
+@media (max-width: 900px) {
+  #app #hand { height: 100%; overflow-y: auto; align-items: flex-start; }
+  #app .hand-area { height: 350px; }
+  #app #battle-stage { bottom: 375px; }
+  #app .hand-layout { height: 300px; }
+}

@@ -1,9 +1,11 @@
+import { cardText } from "./card-text.js";
+import { ACTOR_INKS } from "./actor-ink.js";
 export const HEROES = [
   {
     id: "kael",
     name: "凯尔",
     title: "烬火剑士",
-    color: "#f4ad72",
+    color: ACTOR_INKS.kael,
     icon: "sword",
     team: "ally",
     hp: 1,
@@ -12,7 +14,7 @@ export const HEROES = [
     id: "lyra",
     name: "莉娅",
     title: "星潮术师",
-    color: "#8adfd5",
+    color: ACTOR_INKS.lyra,
     icon: "star",
     team: "ally",
     hp: 1,
@@ -21,7 +23,7 @@ export const HEROES = [
     id: "syl",
     name: "希尔",
     title: "逐风游侠",
-    color: "#bfdb8c",
+    color: ACTOR_INKS.syl,
     icon: "bow",
     team: "ally",
     hp: 1,
@@ -32,7 +34,7 @@ export const MODELS = [
   {
     id: "shard",
     name: "晶棘哨卫",
-    color: "#d5a0df",
+    color: ACTOR_INKS.shard,
     icon: "diamond",
     team: "enemy",
     hp: 1,
@@ -40,7 +42,7 @@ export const MODELS = [
   {
     id: "warden",
     name: "荒星守望者",
-    color: "#e7a46c",
+    color: ACTOR_INKS.warden,
     icon: "crown",
     team: "enemy",
     hp: 1,
@@ -48,7 +50,7 @@ export const MODELS = [
   {
     id: "wisp",
     name: "虚空游灵",
-    color: "#a5bce8",
+    color: ACTOR_INKS.wisp,
     icon: "diamond",
     team: "enemy",
     hp: 1,
@@ -501,9 +503,6 @@ export function cardData(card) {
     if (base.upCost !== undefined) result.cost = base.upCost;
     result.name += "+";
   }
-  result.description = result.text.replace(
-    /\{(\w+)\}/g,
-    (_, key) => result[key],
-  );
+  result.description = cardText(result);
   return result;
 }

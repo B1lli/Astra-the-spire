@@ -1,0 +1,154 @@
+#ultimate-button {
+  position: relative;
+  width: 140px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  text-align: left;
+  border: 1px solid var(--blue);
+  background: var(--paper);
+  color: var(--blue);
+  overflow: hidden;
+}
+#ultimate-button::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  width: var(--charge);
+  height: 3px;
+  background: var(--blue);
+  transition: width 0.3s;
+}
+#ultimate-button > span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+#ultimate-button strong {
+  display: block;
+  font-size: 15px;
+  margin: 5px 0;
+}
+#ultimate-button small {
+  display: block;
+  font-size: 10px;
+}
+#ultimate-button:disabled {
+  opacity: 0.58;
+  cursor: default;
+}
+#ultimate-button.ready {
+  background: var(--blue);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--blue) 25%, transparent);
+  animation: burst-ready 2s ease-in-out infinite;
+}
+#ultimate-button.ready * {
+  color: var(--paper);
+}
+#trial-control {
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 82;
+  padding: 7px 14px;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  background: var(--paper);
+  font-size: 11px;
+}
+#trial-control[hidden],
+#ultimate-button[hidden] {
+  display: none;
+}
+.burst-trial-options {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+.burst-trial-options button {
+  text-align: left;
+  padding: 16px 20px;
+  border: 1px solid var(--trial-ink);
+  border-left: 5px solid var(--trial-ink);
+  background: var(--paper);
+}
+.burst-trial-options button :is(small, strong, span) {
+  color: var(--trial-ink);
+  display: block;
+}
+.burst-trial-options strong {
+  font-size: 25px;
+  margin: 6px 0;
+}
+.burst-trial-options span {
+  font-size: 11px;
+}
+.ultimate-cinematic .topbar,
+.ultimate-cinematic #trial-control {
+  visibility: hidden;
+}
+.ultimate-cinematic #battle-stage {
+  inset: 0 !important;
+  height: 100dvh !important;
+}
+.ultimate-cinematic #attack-caption {
+  bottom: 8%;
+  left: 5%;
+  border-left-width: 5px;
+}
+.ultimate-cinematic #attack-caption strong {
+  font-size: clamp(38px, 6vw, 90px);
+  letter-spacing: -3px;
+}
+.ultimate-cinematic #battle-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: repeating-conic-gradient(
+    from 15deg at 65% 55%,
+    transparent 0deg 8deg,
+    var(--blue) 8.1deg 8.3deg,
+    transparent 8.4deg 14deg
+  );
+  mask-image: radial-gradient(ellipse, transparent 30%, #000 100%);
+}
+.ultimate-cinematic[data-burst-phase="falling"] #battle-stage::after {
+  opacity: 0.38;
+}
+.ultimate-cinematic[data-burst-phase="detonation"] #battle-stage::after {
+  opacity: 0.75;
+}
+@keyframes burst-ready {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 20%, transparent);
+  }
+}
+@media (max-width: 700px) {
+  #ultimate-button {
+    width: 83px;
+    padding: 6px;
+    margin-top: 5px;
+  }
+  #ultimate-button strong {
+    font-size: 12px;
+  }
+  #ultimate-button > span,
+  #ultimate-button small {
+    font-size: 9px;
+  }
+  #trial-control {
+    top: 57px;
+  }
+  .ultimate-cinematic #attack-caption strong {
+    font-size: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #ultimate-button.ready {
+    animation: none;
+  }
+}

@@ -1,12 +1,18 @@
+import "./card-reading.css";
+import { cardRulesHTML, installCardTooltips } from "./card-text.js";
 import "./tower.css";
 import "./mono.css";
 import "./journey.css";
 import "./biomes.css";
+import "./actor-theme.css";
+import "./ultimate.css";
+import { ELEMENT_MAX, ULTIMATES } from "./ultimates.js";
+import { ACTOR_INKS } from "./actor-ink.js";
 import { BIOMES, BIOME_IDS, PALETTE_SOURCE, biomeLocation } from "./biomes.js";
 import { BattleScene } from "./scene.js";
 import { Sound } from "./audio.js";
 import { icon } from "./icons.js";
-import { cardArt, cardSchool, cardSummary, SCHOOLS } from "./card-art.js";
+import { cardArt, cardSchool, SCHOOLS } from "./card-art.js";
 import { HEROES, MODELS, CARDS, RELICS, CHARACTERS, cardData } from "./data.js";
 import * as G from "./roguelike.js";
 import { dealCards, discardHand } from "./card-flow.js";
@@ -25,6 +31,8 @@ let run = G.createRun(),
   scene,
   lastFocus;
 let galleryReturn = "title";
+let burstTrial = false,
+  trialReturn = null;
 let saved = null;
 let aimPoint = null,
   dragCard = null,
@@ -79,6 +87,14 @@ try {
     "<h2>无法启动 3D 战场</h2><p>请在支持 WebGL 的浏览器中开启硬件加速后重试。</p>";
 }
 
+const burstControl = document.createElement("button");
+burstControl.id = "ultimate-button";
+$(".energy-station").append(burstControl);
+const trialControl = document.createElement("button");
+trialControl.id = "trial-control";
+trialControl.textContent = "试演 · 切换角色";
+trialControl.hidden = true;
+document.body.append(trialControl);
 const nodeIcon = (t) =>
   ({
     battle: "sword",
@@ -100,7 +116,7 @@ const typeName = (t) =>
     chest: "宝箱",
   })[t];
 function save() {
-  if (practice) return;
+  if (practice || burstTrial) return;
   try {
     if (["victory", "defeat"].includes(run.phase))
       localStorage.removeItem(SAVE);
@@ -118,6 +134,7 @@ function modelState() {
     target: run.battle?.target,
     units: MODELS.map((m) => ({
       ...m,
+      visual: m.id === run.hero && run.phase === "battle" ? run.battle : {},
       absent:
         m.team === "ally"
           ? m.id !== run.hero || run.phase !== "battle"
@@ -142,7 +159,7 @@ function cardHTML(instance, mode = "hand", index = 0) {
       run.phase !== "battle" ||
       c.cost > run.battle.energy ||
       c.type === "curse");
-  return `<button class="game-card ${c.type} ${c.upgraded ? "upgraded" : ""} ${selected === c.uid && isHand ? "selected" : ""} ${unavailable ? "unavailable" : ""}" style="--hero:${hero.color};--ink:${school.ink};--i:${index}" ${isHand ? `data-card="${c.uid}"` : `data-${mode}="${instance.uid || instance.key}"`} aria-label="${c.name}，${c.cost === 99 ? "无法打出" : c.cost + "能量"}，${c.description}" ${busy && isHand ? "disabled" : ""}><span class="card-cost">${c.cost === 99 ? "×" : c.cost}</span><span class="card-rarity">${c.rarity}</span><div class="card-art-wrap">${cardArt(c, hero.color)}<span class="card-hero">${hero.name} / ${c.type === "attack" ? "攻击" : c.type === "power" ? "能力" : c.type === "curse" ? "诅咒" : "技能"}</span></div><h3>${c.name}</h3><p>${cardSummary(c).replace(/(\d+)/g, "<b>$1</b>")}</p><div class="card-foot"><span>${c.exhaust ? "消耗" : c.type === "power" ? "本场持续" : c.finisher ? "终结" : c.burn ? "燃烧" : c.vulnerable ? "易伤" : c.block ? "格挡" : ""}</span>${isHand ? `<kbd>${index + 1}</kbd>` : icon(hero.icon)}</div></button>`;
+  return `<button class="game-card ${c.type} ${c.upgraded ? "upgraded" : ""} ${selected === c.uid && isHand ? "selected" : ""} ${unavailable ? "unavailable" : ""}" style="--hero:${hero.color};--ink:${school.ink};--i:${index}" ${isHand ? `data-card="${c.uid}"` : `data-${mode}="${instance.uid || instance.key}"`} aria-label="${c.name}，${c.cost === 99 ? "无法打出" : c.cost + "能量"}，${c.description}" ${busy && isHand ? "disabled" : ""}><span class="card-cost">${c.cost === 99 ? "×" : c.cost}</span><span class="card-rarity">${c.rarity}</span><div class="card-art-wrap">${cardArt(c, hero.color)}<span class="card-hero">${hero.name} / ${c.type === "attack" ? "攻击" : c.type === "power" ? "能力" : c.type === "curse" ? "诅咒" : "技能"}</span></div><h3>${c.name}</h3><p>${cardRulesHTML(c)}</p><div class="card-foot"><span>${c.exhaust ? "消耗" : c.type === "power" ? "本场持续" : c.finisher ? "终结" : c.burn ? "燃烧" : c.vulnerable ? "易伤" : c.block ? "格挡" : ""}</span>${isHand ? `<kbd>${index + 1}</kbd>` : icon(hero.icon)}</div></button>`;
 }
 function intentText(e) {
   const i = e.intent,
@@ -153,8 +170,22 @@ function intentText(e) {
 }
 function render() {
   document.body.classList.toggle("acting", busy);
+  document.body.dataset.hero = run.hero;
   const b = run.battle,
     node = G.floors(run)[Math.max(0, run.floor)][run.path[run.floor] || 0];
+  const ultimate = ULTIMATES[run.hero],
+    charge = b?.elementCharge || 0;
+  burstControl.hidden = run.phase !== "battle";
+  burstControl.disabled = busy || b?.phase !== "player" || charge < ELEMENT_MAX;
+  burstControl.classList.toggle("ready", charge >= ELEMENT_MAX);
+  burstControl.style.setProperty(
+    "--charge",
+    `${(charge / ELEMENT_MAX) * 100}%`,
+  );
+  burstControl.innerHTML = `<span>${ultimate.element} <b>${charge} / ${ELEMENT_MAX}</b></span><strong>${ultimate.name}</strong><small>${charge >= ELEMENT_MAX ? "释放 · Q" : "出牌蓄能"}</small>`;
+  burstControl.title = `出牌按费用蓄能，至少 1 格；跨回合保留。蓄满后不耗能量。${ultimate.description}`;
+  trialControl.hidden = !burstTrial;
+  trialControl.disabled = busy;
   $("#hp").textContent = `${run.hp} / ${run.maxHp}`;
   $("#gold").textContent = run.gold;
   $("#deck-count").textContent = run.deck.length;
@@ -235,7 +266,7 @@ function render() {
   $("#unit-labels").innerHTML = G.alive(run)
     .map(
       (e) =>
-        `<button class="unit-label ${e.id === b.target ? "targeted" : ""}" id="label-${e.id}" data-target="${e.id}"><span class="enemy-intent ${e.intent.damage ? "damage-intent" : ""}">${icon(e.intent.damage ? "sword" : "shield")} ${intentText(e)}</span><span class="enemy-name">${e.rage ? "◆ 狂暴 · " : ""}${e.name}</span><span class="enemy-hp"><i style="width:${(e.hp / e.maxHp) * 100}%"></i></span><span class="enemy-hp-number">${e.hp} / ${e.maxHp}${e.block ? " · ⛨ " + e.block : ""}</span><span class="enemy-buffs">${e.vulnerable ? `<i>易伤 ${e.vulnerable}</i>` : ""}${e.burn ? `<i>燃烧 ${e.burn}</i>` : ""}${e.weak ? `<i>虚弱 ${e.weak}</i>` : ""}${e.stagger ? "<i>破防 · 攻击减半</i>" : ""}</span></button>`,
+        `<button class="unit-label ${e.id === b.target ? "targeted" : ""}" style="--blue:${ACTOR_INKS[e.id]}" id="label-${e.id}" data-target="${e.id}"><span class="enemy-intent ${e.intent.damage ? "damage-intent" : ""}">${icon(e.intent.damage ? "sword" : "shield")} ${intentText(e)}</span><span class="enemy-name">${e.rage ? "◆ 狂暴 · " : ""}${e.name}</span><span class="enemy-hp"><i style="width:${(e.hp / e.maxHp) * 100}%"></i></span><span class="enemy-hp-number">${e.hp} / ${e.maxHp}${e.block ? " · ⛨ " + e.block : ""}</span><span class="enemy-buffs">${e.vulnerable ? `<i>易伤 ${e.vulnerable}</i>` : ""}${e.burn ? `<i>燃烧 ${e.burn}</i>` : ""}${e.weak ? `<i>虚弱 ${e.weak}</i>` : ""}${e.stagger ? "<i>破防 · 攻击减半</i>" : ""}</span></button>`,
     )
     .join("");
   scene?.sync(modelState());
@@ -441,7 +472,10 @@ function updateAim() {
 }
 async function useCard(uid) {
   if (busy || overlay || run.phase !== "battle") return;
-  const p = G.previewCard(run, uid, run.battle.target);
+  const p =
+    uid === "ultimate"
+      ? G.previewUltimate(run)
+      : G.previewCard(run, uid, run.battle.target);
   if (!p.valid) {
     toast(p.reason);
     return;
@@ -474,7 +508,9 @@ async function useCard(uid) {
   try {
     await cardCloseup(c);
     await scene.performCard(c, p.result, () => {
-      const r = G.playCard(run, uid, target);
+      const r =
+        uid === "ultimate" ? G.playUltimate(run) : G.playCard(run, uid, target);
+      scene.units.get(run.hero)?.statusFx?.trigger(c);
       if (r.hits.length) sound.impact(c.cinematic ? "ultimate" : "skill");
       r.hits.forEach((h, i) =>
         float(
@@ -567,6 +603,8 @@ async function useCard(uid) {
     scene.resetCamera();
     scene.setInk();
     document.documentElement.style.removeProperty("--blue");
+    if (burstTrial && run.phase === "battle")
+      run.battle.elementCharge = ELEMENT_MAX;
     busy = false;
     $("#cast-banner").className = "";
     $("#cinema-bars").className = "";
@@ -682,12 +720,21 @@ function modalHeading(kicker, title, sub) {
   return `<div class="modal-heading"><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div>`;
 }
 function showTitle() {
+  if (burstTrial && trialReturn) {
+    run = trialReturn;
+    trialReturn = null;
+    burstTrial = false;
+    resetScene();
+    render();
+  }
+  trialControl.hidden = true;
+  delete document.body.dataset.hero;
   openOverlay(
     "title",
     `<div class="title-screen">
     <div class="title-composition" aria-hidden="true"><div class="title-orbit"></div><div class="title-slash"></div><div class="manga-strip strip-one"><img src="/art/blade-clean.png" alt="" /></div><div class="manga-strip strip-two"><img src="/art/oracle-clean.png" alt="" /></div><div class="manga-strip strip-three"><img src="/art/gale-clean.png" alt="" /></div><span class="title-outline">ASCEND</span><div class="title-cross cross-one">+</div><div class="title-cross cross-two">+</div></div>
     <div class="title-copy"><span class="title-number">01 / 星之塔</span><h1>星<span>烬</span></h1><p>一人，一副牌，一条登顶之路。</p>
-    <div class="title-actions">${saved ? `<button class="primary-button" data-resume>继续游戏 <small>${HEROES.find((h) => h.id === saved.hero).name} · ${Math.max(0, saved.floor + 1)} 层</small></button>` : ""}<button class="${saved ? "text-button" : "primary-button"}" data-new>开始游戏 ${icon("chevron")}</button><button class="text-button" data-landscapes>地图图鉴 ↗</button></div>
+    <div class="title-actions">${saved ? `<button class="primary-button" data-resume>继续游戏 <small>${HEROES.find((h) => h.id === saved.hero).name} · ${Math.max(0, saved.floor + 1)} 层</small></button>` : ""}<button class="${saved ? "text-button" : "primary-button"}" data-new>开始游戏 ${icon("chevron")}</button><button class="text-button" data-landscapes>地图图鉴 ↗</button><button class="text-button" data-burst-menu>大招试演 ↗</button></div>
     <span class="title-bottom">卡牌构筑 / 回合制冒险</span></div></div>`,
   );
   document.body.classList.add("presentation", "title-presentation");
@@ -721,7 +768,32 @@ function leaveLandscapes() {
   if (galleryReturn === "pause") showPause();
   else showTitle();
 }
+function showBurstTrials() {
+  openOverlay(
+    "burst-trials",
+    `<div class="modal-card small-modal">${modalHeading("", "大招试演", "")}
+    <div class="burst-trial-options">${HEROES.map((h) => `<button data-burst-trial="${h.id}" style="--trial-ink:${h.color}"><small>${h.name}</small><strong>${ULTIMATES[h.id].name}</strong><span>${ULTIMATES[h.id].description}</span></button>`).join("")}</div><button class="text-button" data-title>返回主菜单</button></div>`,
+  );
+}
+function startBurstTrial(hero) {
+  if (!burstTrial) trialReturn = run;
+  burstTrial = true;
+  run = G.createRun(Date.now(), hero);
+  run.floor = 0;
+  run.path = [0];
+  G.startBattle(run, "elite");
+  run.battle.elementCharge = ELEMENT_MAX;
+  // Trial-only states demonstrate the same appearances driven by real battle buffs.
+  if (hero === "kael") run.battle.strength = 2;
+  if (hero === "lyra") run.battle.block = 19;
+  if (hero === "syl") run.battle.afterimage = 3;
+  scene.endPresentation();
+  resetScene();
+  closeOverlay();
+  render();
+}
 function showCharacters(chosen = "kael") {
+  document.body.dataset.hero = chosen;
   const hero = HEROES.find((h) => h.id === chosen),
     c = CHARACTERS[chosen],
     relic = RELICS[c.relic];
@@ -909,13 +981,13 @@ async function cardCloseup(card) {
       requestAnimationFrame(() => requestAnimationFrame(resolve)),
     );
     scene.resize();
-    await scene.attackerCloseup(card);
+    if (!card.cinematic) await scene.attackerCloseup(card);
     return;
   }
   const school = cardSchool(card);
   const panel = document.createElement("div");
   panel.id = "card-closeup";
-  panel.style.setProperty("--ink", "#2148B8");
+  panel.style.setProperty("--ink", ACTOR_INKS[card.hero]);
   panel.setAttribute("aria-hidden", "true");
   panel.innerHTML = `<div class="cutin-slash"></div><div class="cutin-card">${cardHTML(card, "cinematic")}</div><div class="cutin-caption"><small>${school.name}</small><strong>${card.name}</strong><span>${card.cinematic ? "终式 / FINAL ACT" : "星轨展开 / CARD ACT"}</span></div>`;
   document.body.append(panel);
@@ -962,6 +1034,8 @@ function newRun(hero) {
     return;
   }
   sound.unlock();
+  burstTrial = false;
+  trialReturn = null;
   run = G.createRun(Date.now(), hero);
   resetScene();
   render();
@@ -1013,6 +1087,10 @@ document.addEventListener("click", (e) => {
   if (suppressClick) return;
   if (el.dataset.card) selectCard(Number(el.dataset.card));
   if (el.dataset.target) targetClick(el.dataset.target);
+  if (el.id === "ultimate-button") useCard("ultimate");
+  if (el.id === "trial-control" || el.hasAttribute("data-burst-menu"))
+    showBurstTrials();
+  if (el.dataset.burstTrial) startBurstTrial(el.dataset.burstTrial);
   if (el.id === "confirm-card") useCard(selected);
   if (el.hasAttribute("data-close")) {
     if (overlay === "route-deck") showMap();
@@ -1079,6 +1157,8 @@ document.addEventListener("click", (e) => {
       `<div class="modal-card small-modal">${modalHeading("A NEW CONSTELLATION", "重新开启攀登？", "当前这一局会被新冒险替代。")}<button class="primary-button" data-new>开始新冒险</button><button class="text-button" data-close>保留当前进度</button></div>`,
     );
   if (el.hasAttribute("data-resume")) {
+    burstTrial = false;
+    trialReturn = null;
     run = structuredClone(saved);
     resetScene();
     closeOverlay();
@@ -1287,6 +1367,10 @@ document.addEventListener("keydown", (e) => {
       render();
     } else showPause();
   }
+  if (e.key.toLowerCase() === "q") {
+    e.preventDefault();
+    useCard("ultimate");
+  }
   if (e.key.toLowerCase() === "e") {
     e.preventDefault();
     endTurn();
@@ -1304,3 +1388,5 @@ document.addEventListener("keydown", (e) => {
 resetScene();
 render();
 showTitle();
+
+installCardTooltips();
