@@ -17,6 +17,9 @@ import { HEROES, MODELS, CARDS, RELICS, CHARACTERS, cardData } from "./data.js";
 import * as G from "./roguelike.js";
 import { dealCards, discardHand } from "./card-flow.js";
 
+const relicImage = (key, className = "") =>
+  `<img class="relic-art ${className}" src="/art/relics/${key}.png" alt="" draggable="false" decoding="async"/>`;
+
 const $ = (s) => document.querySelector(s),
   sound = new Sound(),
   practice = new URLSearchParams(location.search).has("practice"),
@@ -204,7 +207,7 @@ function render() {
   $("#relics").innerHTML = run.relics
     .map(
       (key) =>
-        `<button class="relic" data-relic-info="${key}" title="${RELICS[key].name}：${RELICS[key].text}">${icon(RELICS[key].icon)}<span>${RELICS[key].name}</span></button>`,
+        `<button class="relic" data-relic-info="${key}" title="${RELICS[key].name}：${RELICS[key].text}">${relicImage(key)}<span>${RELICS[key].name}</span></button>`,
     )
     .join("");
   for (const hero of HEROES) {
@@ -803,7 +806,7 @@ function showCharacters(chosen = "kael") {
     <button class="back-link" data-title>← 返回</button><div class="character-art"><img src="/art/${c.art}-clean.png" alt="${hero.title}" /></div>
     <div class="character-copy"><p class="selection-label">选择角色</p><div class="character-tabs">${HEROES.map((h) => `<button data-character="${h.id}" aria-pressed="${h.id === chosen}">${h.name}</button>`).join("")}</div>
     <h1>${hero.name}</h1><h2>${hero.title}</h2><p>${c.description}</p><div class="character-stats">♡ ${c.hp} <span>◈ 99</span><span>${c.deck.length} 张牌</span></div>
-    <div class="starter-relic">${icon(relic.icon)}<div><small>初始遗物</small><b>${relic.name}</b><p>${relic.text}</p></div></div>
+    <div class="starter-relic">${relicImage(c.relic)}<div><small>初始遗物</small><b>${relic.name}</b><p>${relic.text}</p></div></div>
     <div class="starter-deck"><small>初始牌组</small>${[...new Set(c.deck)].map((key) => `<span title="${cardData({ key }).description}">${CARDS[key].name} × ${c.deck.filter((k) => k === key).length}</span>`).join("")}</div>
     <button class="primary-button" data-embark="${chosen}">踏入高塔 ${icon("chevron")}</button></div></div>`,
   );
@@ -816,7 +819,7 @@ function showBlessing() {
   openOverlay(
     "blessing",
     `<div class="modal-card blessing-screen">${modalHeading("", "启程之赐", `${hero.name} · ♡ ${run.hp} · ◈ ${run.gold}`)}
-  <div class="equipped-relic">${icon(r.icon)}<div><small>已装备</small><b>${r.name}</b><p>${r.text}</p></div></div>
+  <div class="equipped-relic">${relicImage(CHARACTERS[run.hero].relic)}<div><small>已装备</small><b>${r.name}</b><p>${r.text}</p></div></div>
   <div class="blessing-options"><button data-blessing="vitality">${icon("leaf")}<b>强韧</b><span>最大生命 +7</span></button><button data-blessing="gold">${icon("star")}<b>馈赠</b><span>金币 +75</span></button><button data-blessing="relic">${icon("shield")}<b>交换</b><span>失去 10 生命</span><small>获得旧王护符：开战 +10 格挡</small></button></div></div>`,
   );
 }
@@ -824,7 +827,7 @@ function showChest() {
   const relic = RELICS[run.chest];
   openOverlay(
     "chest",
-    `<div class="modal-card small-modal">${modalHeading("", "星之遗藏", "")}<div class="chest-relic">${icon(relic?.icon || "diamond")}<h2>${relic?.name || "空的宝箱"}</h2><p>${relic?.text || "所有遗物均已获得"}</p></div><button class="primary-button" data-chest>${relic ? "收下遗物" : "继续"}</button></div>`,
+    `<div class="modal-card small-modal">${modalHeading("", "星之遗藏", "")}<div class="chest-relic">${relic ? relicImage(run.chest) : icon("diamond")}<h2>${relic?.name || "空的宝箱"}</h2><p>${relic?.text || "所有遗物均已获得"}</p></div><button class="primary-button" data-chest>${relic ? "收下遗物" : "继续"}</button></div>`,
   );
 }
 function showMap(readonly = false) {
@@ -856,7 +859,7 @@ function showMap(readonly = false) {
   }).join("");
   openOverlay(
     readonly ? "map-view" : "map",
-    `<div class="modal-card route-modal">${readonly ? closeButton : ""}<div class="route-heading"><div><h2>星之塔</h2><p>${run.floor < 0 ? "选择起点" : "沿连线前进"} · 15 层</p></div><div class="route-resources">♡ ${run.hp}/${run.maxHp}　◈ ${run.gold}<small>${HEROES.find((h) => h.id === run.hero).name} · ${run.deck.length} 张牌</small></div></div><div class="route-legend">${["battle", "elite", "event", "shop", "camp", "chest", "boss"].map((t) => `<span>${icon(nodeIcon(t))}${typeName(t)}</span>`).join("")}</div><div class="route-scroll"><div class="route-board" style="height:${height}px">${bands}<svg viewBox="0 0 600 ${height}" preserveAspectRatio="none">${lines}</svg>${nodes}</div></div><div class="route-bottom">${run.relics.map((k) => `<span title="${RELICS[k].text}">${icon(RELICS[k].icon)}${RELICS[k].name}</span>`).join("")}<button data-route-deck>牌组 ${run.deck.length}</button></div></div>`,
+    `<div class="modal-card route-modal">${readonly ? closeButton : ""}<div class="route-heading"><div><h2>星之塔</h2><p>${run.floor < 0 ? "选择起点" : "沿连线前进"} · 15 层</p></div><div class="route-resources">♡ ${run.hp}/${run.maxHp}　◈ ${run.gold}<small>${HEROES.find((h) => h.id === run.hero).name} · ${run.deck.length} 张牌</small></div></div><div class="route-legend">${["battle", "elite", "event", "shop", "camp", "chest", "boss"].map((t) => `<span>${icon(nodeIcon(t))}${typeName(t)}</span>`).join("")}</div><div class="route-scroll"><div class="route-board" style="height:${height}px">${bands}<svg viewBox="0 0 600 ${height}" preserveAspectRatio="none">${lines}</svg>${nodes}</div></div><div class="route-bottom">${run.relics.map((k) => `<span title="${RELICS[k].text}">${relicImage(k)}${RELICS[k].name}</span>`).join("")}<button data-route-deck>牌组 ${run.deck.length}</button></div></div>`,
   );
 }
 function centerMap() {
@@ -871,7 +874,7 @@ function showReward() {
   const r = run.reward;
   openOverlay(
     "reward",
-    `<div class="modal-card reward-modal">${modalHeading("ENCOUNTER CLEARED", "战斗胜利", `获得 ${r.gold} 金币${run.relics.includes("feather") ? " · 黎明之羽恢复 5 生命" : ""}。选一张牌加入牌组，或保持牌组精简。`)}<div class="reward-cards">${r.cardTaken ? '<div class="reward-taken">卡牌选择已完成 ✓</div>' : r.cards.map((key) => cardHTML({ key }, "reward")).join("")}</div>${!r.cardTaken ? '<button class="text-button" data-skip-reward>跳过卡牌奖励</button>' : ""}${r.relics.length ? `<div class="relic-reward"><h3>精英战利品 · 选择一件遗物</h3>${r.relicTaken ? "<p>遗物已获得 ✓</p>" : r.relics.map((key) => `<button class="relic-option" data-take-relic="${key}">${icon(RELICS[key].icon)}<span><b>${RELICS[key].name}</b><small>${RELICS[key].text}</small></span></button>`).join("")}</div>` : ""}<button class="primary-button" data-leave-reward ${!r.cardTaken || (r.relics.length && !r.relicTaken) ? "disabled" : ""}>下一层 ${icon("chevron")}</button></div>`,
+    `<div class="modal-card reward-modal">${modalHeading("ENCOUNTER CLEARED", "战斗胜利", `获得 ${r.gold} 金币${run.relics.includes("feather") ? " · 黎明之羽恢复 5 生命" : ""}。选一张牌加入牌组，或保持牌组精简。`)}<div class="reward-cards">${r.cardTaken ? '<div class="reward-taken">卡牌选择已完成 ✓</div>' : r.cards.map((key) => cardHTML({ key }, "reward")).join("")}</div>${!r.cardTaken ? '<button class="text-button" data-skip-reward>跳过卡牌奖励</button>' : ""}${r.relics.length ? `<div class="relic-reward"><h3>精英战利品 · 选择一件遗物</h3>${r.relicTaken ? "<p>遗物已获得 ✓</p>" : r.relics.map((key) => `<button class="relic-option" data-take-relic="${key}">${relicImage(key)}<span><b>${RELICS[key].name}</b><small>${RELICS[key].text}</small></span></button>`).join("")}</div>` : ""}<button class="primary-button" data-leave-reward ${!r.cardTaken || (r.relics.length && !r.relicTaken) ? "disabled" : ""}>下一层 ${icon("chevron")}</button></div>`,
   );
 }
 function showCamp(upgrade = false) {
@@ -898,7 +901,7 @@ function showEvent() {
 function showShop(remove = false) {
   openOverlay(
     "shop",
-    `<div class="modal-card shop-modal">${modalHeading("THE FALLING STAR BAZAAR", "流星集市", `你的金币：${run.gold} ◈。买下关键组件，或移除一张拖慢节奏的牌。`)}${remove ? `<div class="deck-grid">${run.deck.map((c) => cardHTML(c, "remove")).join("")}</div><button class="text-button" data-shop-back>返回集市</button>` : `<div class="shop-cards">${run.shop.cards.map((key) => `<div>${cardHTML({ key }, "shop-card")}<button class="purchase" data-buy-card="${key}" ${run.shop.bought.includes(key) || run.gold < 55 ? "disabled" : ""}>${run.shop.bought.includes(key) ? "已售出" : "55 ◈ · 购买"}</button></div>`).join("")}</div><div class="shop-services"><button data-buy-relic="${run.shop.relic}" ${run.relics.includes(run.shop.relic) || run.gold < 95 ? "disabled" : ""}>${icon(RELICS[run.shop.relic]?.icon)}<b>${RELICS[run.shop.relic]?.name}</b><small>${RELICS[run.shop.relic]?.text}</small><span>95 ◈</span></button><button data-remove-menu ${run.shop.removed || run.gold < 45 ? "disabled" : ""}>${icon("cross")}<b>遗忘一张牌</b><small>${run.shop.removed ? "本次移除已使用" : "永久移除一张卡牌，让核心更快到手。"}</small><span>45 ◈</span></button><button data-buy-potion ${run.gold < 35 || run.potion >= 3 ? "disabled" : ""}>${icon("leaf")}<b>星露药水</b><small>战斗中免费恢复 20 生命。最多携带 3 瓶。</small><span>35 ◈</span></button></div><button class="primary-button" data-leave-shop>继续攀升 ${icon("chevron")}</button>`}</div>`,
+    `<div class="modal-card shop-modal">${modalHeading("THE FALLING STAR BAZAAR", "流星集市", `你的金币：${run.gold} ◈。买下关键组件，或移除一张拖慢节奏的牌。`)}${remove ? `<div class="deck-grid">${run.deck.map((c) => cardHTML(c, "remove")).join("")}</div><button class="text-button" data-shop-back>返回集市</button>` : `<div class="shop-cards">${run.shop.cards.map((key) => `<div>${cardHTML({ key }, "shop-card")}<button class="purchase" data-buy-card="${key}" ${run.shop.bought.includes(key) || run.gold < 55 ? "disabled" : ""}>${run.shop.bought.includes(key) ? "已售出" : "55 ◈ · 购买"}</button></div>`).join("")}</div><div class="shop-services"><button data-buy-relic="${run.shop.relic}" ${run.relics.includes(run.shop.relic) || run.gold < 95 ? "disabled" : ""}>${relicImage(run.shop.relic)}<b>${RELICS[run.shop.relic]?.name}</b><small>${RELICS[run.shop.relic]?.text}</small><span>95 ◈</span></button><button data-remove-menu ${run.shop.removed || run.gold < 45 ? "disabled" : ""}>${icon("cross")}<b>遗忘一张牌</b><small>${run.shop.removed ? "本次移除已使用" : "永久移除一张卡牌，让核心更快到手。"}</small><span>45 ◈</span></button><button data-buy-potion ${run.gold < 35 || run.potion >= 3 ? "disabled" : ""}>${icon("leaf")}<b>星露药水</b><small>战斗中免费恢复 20 生命。最多携带 3 瓶。</small><span>35 ◈</span></button></div><button class="primary-button" data-leave-shop>继续攀升 ${icon("chevron")}</button>`}</div>`,
   );
 }
 function showDeck(pile = "deck") {

@@ -5,6 +5,17 @@ export const CARD_ART = Object.freeze(
   Object.fromEntries(Object.keys(CARDS).map((key) => [key, `/art/cards/${key}.png`])),
 );
 
+// Keep the action point visible in the shallow hand/deck illustration window.
+const ART_FOCUS = {
+  strike: "50% 20%",
+  guard: "50% 25%",
+  brand: "50% 85%",
+  finisher: "50% 20%",
+  meteor: "50% 25%",
+  strength: "50% 20%",
+  fortress: "50% 85%",
+};
+
 export const SCHOOLS = {
   blade: { name: "赤刃 · 连击", ink: "#C83232", image: "blade" },
   ember: { name: "焚印 · 引爆", ink: "#C65F38", image: "ember" },
@@ -34,6 +45,6 @@ export function cardSchool(card) {
 export function cardArt(card) {
   const school = cardSchool(card);
   const image = CARD_ART[card.key] || `/art/${school.image}-clean.png`;
-  return `<div class="card-illustration" style="--ink:${school.ink}"><img src="${image}" alt="" draggable="false" decoding="async"/><span class="school-mark">${school.name}</span></div>`;
+  return `<div class="card-illustration" style="--ink:${school.ink}"><img src="${image}" style="object-position:${ART_FOCUS[card.key] || "50% 50%"}" alt="" draggable="false" decoding="async"/><span class="school-mark">${school.name}</span></div>`;
 }
 export { cardText as cardSummary } from "./card-text.js";

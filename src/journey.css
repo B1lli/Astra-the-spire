@@ -162,10 +162,11 @@
   margin: 20px 0;
   align-items: center;
 }
-.starter-relic > .icon,
-.equipped-relic > .icon {
-  width: 36px;
-  height: 36px;
+.starter-relic > .relic-art,
+.equipped-relic > .relic-art {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .starter-relic small,
@@ -242,9 +243,11 @@
   margin: 25px 0;
   text-align: center;
 }
+.chest-relic > .relic-art,
 .chest-relic > .icon {
-  width: 80px;
-  height: 80px;
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
 }
 .chest-relic p {
   font-size: 13px;
@@ -474,6 +477,11 @@
 #relics .relic span {
   display: inline;
   font-size: 11px;
+}
+.route-bottom .relic-art {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 .party-portraits {
   display: none !important;
@@ -794,7 +802,7 @@
   --ink: var(--blue) !important;
 }
 .game-card img {
-  filter: grayscale(1) contrast(1.08);
+  filter: none;
 }
 #relics .relic {
   transform: none;

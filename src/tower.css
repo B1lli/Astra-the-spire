@@ -214,11 +214,11 @@ h1 {
   border-radius: 4px;
   background: #182c3299;
 }
-.relic .icon {
-  width: 18px;
-  height: 18px;
+.relic .relic-art {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
   transform: rotate(-45deg);
-  color: var(--gold);
 }
 .relic:hover {
   background: #a9994933;
@@ -1610,10 +1610,11 @@ kbd {
   border-color: var(--gold);
   background: #bfa36112;
 }
-.relic-option > .icon {
-  color: var(--gold);
-  width: 26px;
-  height: 26px;
+.relic-option > .relic-art {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 .relic-option b {
   display: block;
@@ -1809,6 +1810,12 @@ kbd {
 }
 .shop-services .icon {
   color: var(--gold);
+}
+.shop-services .relic-art {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  margin: -8px auto 2px;
 }
 .shop-services b {
   font-size: 12px;
