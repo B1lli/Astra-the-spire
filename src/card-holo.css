@@ -1,0 +1,93 @@
+/* View-dependent light stays inside the illustration, below every label. */
+.game-card {
+  --holo-x: 50%;
+  --holo-y: 50%;
+  --holo-dx: 0px;
+  --holo-dy: 0px;
+  --holo-axis-x: 1;
+  --holo-axis-y: 0;
+  --holo-angle: 0deg;
+  rotate: var(--holo-axis-x) var(--holo-axis-y) 0 var(--holo-angle);
+  transition:
+    transform 0.22s ease,
+    rotate 0.18s ease-out,
+    box-shadow 0.22s ease;
+}
+
+.game-card .card-illustration {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.game-card .card-illustration::before,
+.game-card .card-illustration::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.game-card .card-illustration::before {
+  background: repeating-linear-gradient(
+    115deg,
+    #80ffe2 0%,
+    #80c5ff 12%,
+    #c6a0ff 24%,
+    #ffadd6 36%,
+    #ffe6a0 48%,
+    #80ffe2 60%
+  );
+  background-size: 260% 260%;
+  background-position: var(--holo-x) var(--holo-y);
+  mix-blend-mode: soft-light;
+}
+
+.game-card .card-illustration::after {
+  background:
+    radial-gradient(
+      ellipse at var(--holo-x) var(--holo-y),
+      #fff9,
+      #d9f4ff26 28%,
+      transparent 65%
+    ),
+    repeating-linear-gradient(135deg, #ffffff18 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen;
+}
+
+.game-card .school-mark {
+  z-index: 2;
+}
+.game-card .card-illustration img {
+  transition: transform 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .game-card.holo-active {
+    box-shadow:
+      5px 10px 20px #101b3233,
+      0 0 13px color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+  .game-card.holo-active .card-illustration img {
+    transform: translate(var(--holo-dx), var(--holo-dy)) scale(1.09);
+  }
+  .game-card.holo-active .card-illustration::before {
+    opacity: 0.7;
+  }
+  .game-card.holo-active .card-illustration::after {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card {
+    rotate: none;
+  }
+  .game-card .card-illustration img,
+  .game-card .card-illustration::before,
+  .game-card .card-illustration::after {
+    transition: none;
+  }
+}

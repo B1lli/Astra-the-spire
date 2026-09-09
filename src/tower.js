@@ -16,6 +16,7 @@ import { cardArt, cardSchool, SCHOOLS } from "./card-art.js";
 import { HEROES, MODELS, CARDS, RELICS, CHARACTERS, cardData } from "./data.js";
 import * as G from "./roguelike.js";
 import { dealCards, discardHand } from "./card-flow.js";
+import { installCardHolo } from "./card-holo.js";
 
 const relicImage = (key, className = "") =>
   `<img class="relic-art ${className}" src="/art/relics/${key}.png" alt="" draggable="false" decoding="async"/>`;
@@ -40,6 +41,7 @@ let saved = null;
 let aimPoint = null,
   dragCard = null,
   suppressClick = false;
+installCardHolo({ enabled: () => motion && !busy && !dragCard?.active });
 try {
   const raw = localStorage.getItem(SAVE);
   if (raw && !practice) {
